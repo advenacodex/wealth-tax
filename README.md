@@ -117,6 +117,17 @@ The FIFO calculation logic (`src/utils/fifo-engine.ts`) is a port of the
 `@wealthfolio/addon-sdk` types and generalized for any base currency (the
 `*EUR` fields from the original are renamed to `*Base`).
 
+### Standalone alternative
+
+The same FIFO tax-report engine is also available as
+[`wealthfolio-taxes`](https://github.com/advenacodex/wealthfolio-taxes), a
+standalone Next.js application distributed as a Docker image. Instead of
+running inside Wealthfolio's addon runtime, it connects directly to
+`wealthfolio.db` (SQLite) in read-only mode and runs as an independently
+deployable containerized service — useful if you want the tax report exposed
+as a separately hosted web app (e.g. on a NAS or home server) rather than
+embedded in the Wealthfolio UI.
+
 ### License
 
 MIT
@@ -241,6 +252,17 @@ La lógica de cálculo FIFO (`src/utils/fifo-engine.ts`) es un puerto del
 módulo `src/lib/fifo.ts` del proyecto `wealthfolio-taxes`, adaptado a los
 tipos de `@wealthfolio/addon-sdk` y generalizado para cualquier divisa base
 (los campos `*EUR` del original pasan a llamarse `*Base`).
+
+### Alternativa standalone
+
+El mismo motor de cálculo FIFO también está disponible como
+[`wealthfolio-taxes`](https://github.com/advenacodex/wealthfolio-taxes), una
+aplicación Next.js independiente distribuida como imagen Docker. En lugar de
+ejecutarse dentro del runtime de addons de Wealthfolio, se conecta
+directamente a `wealthfolio.db` (SQLite) en modo solo lectura y corre como un
+servicio containerizado desplegable de forma independiente — útil si
+prefieres exponer el informe fiscal como una web alojada aparte (p. ej. en un
+NAS o servidor doméstico) en lugar de integrada en la UI de Wealthfolio.
 
 ### Licencia
 
