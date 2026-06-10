@@ -1,0 +1,34 @@
+{
+  "id": "wealth-tax",
+  "name": "WealthTax",
+  "version": "1.0.0",
+  "description": "FIFO realized gains and open positions tax report",
+  "author": "advenacodex@gmail.com",
+  "main": "dist/addon.js",
+  "sdkVersion": "3.0.0",
+  "enabled": true,
+  "permissions": [
+    {
+      "category": "activities",
+      "functions": ["getAll"],
+      "purpose": "Read full activity history to compute FIFO cost basis and realized gains"
+    },
+    {
+      "category": "accounts",
+      "functions": ["getAll"],
+      "purpose": "Read account groups for group-level FIFO pooling and account names"
+    },
+    {
+      "category": "settings",
+      "functions": ["get"],
+      "purpose": "Read the base currency for displaying converted amounts"
+    },
+    {
+      "category": "ui",
+      "functions": ["sidebar.addItem", "router.add"],
+      "purpose": "Add a sidebar entry and page for the tax report"
+    }
+  ],
+  "keywords": ["wealthfolio", "addon", "taxes", "fifo"],
+  "license": "MIT"
+}
