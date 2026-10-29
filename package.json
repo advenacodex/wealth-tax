@@ -1,6 +1,6 @@
 {
   "name": "wealth-tax-addon",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "FIFO realized gains and open positions tax report for Wealthfolio",
   "type": "module",
   "main": "dist/addon.js",
@@ -17,8 +17,8 @@
   },
   "dependencies": {
     "@tanstack/react-query": "5.62.7",
-    "@wealthfolio/addon-sdk": "^3.5.1",
-    "@wealthfolio/ui": "^3.5.1",
+    "@wealthfolio/addon-sdk": "^3.11.0",
+    "@wealthfolio/ui": "^3.11.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   },
@@ -28,7 +28,7 @@
     "@types/react": "^19.2.13",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^4.3.4",
-    "@wealthfolio/addon-dev-tools": "^3.5.1",
+    "@wealthfolio/addon-dev-tools": "^3.11.0",
     "rollup-plugin-external-globals": "^0.13.0",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",

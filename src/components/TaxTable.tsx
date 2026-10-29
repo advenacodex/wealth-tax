@@ -1,23 +1,34 @@
 import { Fragment, useState } from "react";
-import type { Account } from "@wealthfolio/addon-sdk";
-import { cn, formatAmount, Icons } from "@wealthfolio/ui";
+import { useAddonTranslation, type Account } from "@wealthfolio/addon-sdk";
+import { cn, Icons } from "@wealthfolio/ui";
 import type { AssetOption } from "../hooks/use-tax-data";
 import type { OpenPosition, RealizedGain } from "../utils/fifo-engine";
+import { fmtMoney, fmtNumber } from "../utils/format";
+import { totalizeByAsset, type Amount } from "../utils/totals";
+
+// La alineación va en línea: el addon no empaqueta CSS propio y depende de las
+// clases que el host tenga compiladas.
+// Cabecera fija dentro del contenedor con scroll de la tabla.
+const STICKY_HEAD = {
+  position: "sticky",
+  top: 0,
+  zIndex: 1,
+  background: "#000",
+} as const;
+const RIGHT = { textAlign: "right" } as const;
+const RIGHT_BLOCK = { display: "block", textAlign: "right" } as const;
 
 function formatDate(dateStr: string) {
   return dateStr.slice(0, 10);
 }
 
 function fmtOrig(value: number, currency: string) {
-  return `${value.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 4 })} ${currency}`;
+  return fmtMoney(value, currency, 2, 4);
 }
 
 function fmtFX(rate: number, currency: string, baseCurrency: string) {
   if (currency === baseCurrency) return "—";
-  return rate.toLocaleString("es-ES", {
-    minimumFractionDigits: 4,
-    maximumFractionDigits: 6,
-  });
+  return fmtNumber(rate, 4, 6);
 }
 
 // Renders a value in its original currency with the base-currency equivalent
@@ -36,14 +47,18 @@ function WithBase({
   zero?: string;
 }) {
   if (value === 0 && zero === "—")
-    return <span className="text-muted-foreground">{zero}</span>;
+    return (
+      <span className="text-muted-foreground" style={RIGHT_BLOCK}>
+        {zero}
+      </span>
+    );
   if (currency === baseCurrency)
-    return <span>{formatAmount(value, baseCurrency)}</span>;
+    return <span style={RIGHT_BLOCK}>{fmtMoney(value, baseCurrency)}</span>;
   return (
     <span className="flex flex-col items-end gap-0.5 leading-tight">
       <span>{fmtOrig(value, currency)}</span>
       <span className="text-muted-foreground/70 text-[10px]">
-        {formatAmount(value * fxRate, baseCurrency)}
+        {fmtMoney(value * fxRate, baseCurrency)}
       </span>
     </span>
   );
@@ -117,6 +132,7 @@ export function ClosedPositionsTable({
   toggleRow,
 }: ClosedPositionsTableProps) {
   const { sortCol, sortDir, handleSort } = useSort();
+  const { t } = useAddonTranslation();
 
   const sortedResults = sortCol
     ? [...results].sort((a, b) => {
@@ -133,38 +149,26 @@ export function ClosedPositionsTable({
 
   return (
     <table className="w-full text-left text-sm">
-      <thead>
+      <thead style={STICKY_HEAD}>
         <tr className="bg-black text-white">
           <th className={thSort} onClick={() => handleSort("date")}>
-            Fecha <SortArrow active={sortCol === "date"} dir={sortDir} />
+            {t("colDate")} <SortArrow active={sortCol === "date"} dir={sortDir} />
           </th>
           <th
             className={cn(thSort, "whitespace-nowrap")}
             onClick={() => handleSort("asset")}
           >
-            Activo <SortArrow active={sortCol === "asset"} dir={sortDir} />
+            {t("colAsset")} <SortArrow active={sortCol === "asset"} dir={sortDir} />
           </th>
-          <th className="px-4 py-3 font-medium whitespace-nowrap">Cuenta</th>
-          <th className="px-4 py-3 text-right font-medium">Cant.</th>
-          <th className="px-4 py-3 text-right font-medium whitespace-nowrap">
-            Precio
-          </th>
-          <th className="px-4 py-3 text-right font-medium whitespace-nowrap">
-            Tasa FX
-          </th>
-          <th className="px-4 py-3 text-right font-medium whitespace-nowrap">
-            Total
-          </th>
-          <th className="px-4 py-3 text-right font-medium">Comisiones</th>
-          <th className="px-4 py-3 text-right font-medium whitespace-nowrap">
-            Total − com.
-          </th>
-          <th className="px-4 py-3 text-right font-medium whitespace-nowrap">
-            Coste orig. (c/com.)
-          </th>
-          <th className="px-4 py-3 text-right font-medium whitespace-nowrap">
-            Benef./Pérd.
-          </th>
+          <th className="px-4 py-3 font-medium whitespace-nowrap">{t("colAccount")}</th>
+          <th className="px-4 py-3 text-right font-medium" style={RIGHT}>{t("colQty")}</th>
+          <th className="px-4 py-3 text-right font-medium whitespace-nowrap" style={RIGHT}>{t("colPrice")}</th>
+          <th className="px-4 py-3 text-right font-medium whitespace-nowrap" style={RIGHT}>{t("colFx")}</th>
+          <th className="px-4 py-3 text-right font-medium whitespace-nowrap" style={RIGHT}>{t("colTotal")}</th>
+          <th className="px-4 py-3 text-right font-medium" style={RIGHT}>{t("colFees")}</th>
+          <th className="px-4 py-3 text-right font-medium whitespace-nowrap" style={RIGHT}>{t("colNet")}</th>
+          <th className="px-4 py-3 text-right font-medium whitespace-nowrap" style={RIGHT}>{t("colOrigCost")}</th>
+          <th className="px-4 py-3 text-right font-medium whitespace-nowrap" style={RIGHT}>{t("colGain")}</th>
         </tr>
       </thead>
       <tbody className="divide-border divide-y">
@@ -175,8 +179,8 @@ export function ClosedPositionsTable({
               className="text-muted-foreground px-6 py-12 text-center italic"
             >
               {isLoading
-                ? "Buscando operaciones..."
-                : "No hay operaciones realizadas para estos filtros."}
+                ? t("searchingOps")
+                : t("noOps")}
             </td>
           </tr>
         ) : (
@@ -224,12 +228,10 @@ export function ClosedPositionsTable({
                   </td>
                   <td className="px-4 py-3 font-medium">{symbol}</td>
                   <td className="text-muted-foreground px-4 py-3" />
-                  <td className="px-4 py-3 text-right tabular-nums">
-                    {r.quantity.toLocaleString("es-ES", {
-                      maximumFractionDigits: 4,
-                    })}
+                  <td className="px-4 py-3 text-right tabular-nums" style={RIGHT}>
+                    {fmtNumber(r.quantity, 0, 4)}
                   </td>
-                  <td className="px-4 py-3 text-right tabular-nums whitespace-nowrap">
+                  <td className="px-4 py-3 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
                     <WithBase
                       value={r.sellPriceOriginal}
                       currency={r.sellCurrency}
@@ -237,10 +239,10 @@ export function ClosedPositionsTable({
                       baseCurrency={baseCurrency}
                     />
                   </td>
-                  <td className="text-muted-foreground px-4 py-3 text-right tabular-nums whitespace-nowrap">
+                  <td className="text-muted-foreground px-4 py-3 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
                     {fmtFX(r.sellFxRate, r.sellCurrency, baseCurrency)}
                   </td>
-                  <td className="px-4 py-3 text-right tabular-nums whitespace-nowrap">
+                  <td className="px-4 py-3 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
                     <WithBase
                       value={totalVenta}
                       currency={r.sellCurrency}
@@ -248,7 +250,7 @@ export function ClosedPositionsTable({
                       baseCurrency={baseCurrency}
                     />
                   </td>
-                  <td className="text-muted-foreground px-4 py-3 text-right tabular-nums whitespace-nowrap">
+                  <td className="text-muted-foreground px-4 py-3 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
                     <WithBase
                       value={r.sellFeeOriginal}
                       currency={r.sellCurrency}
@@ -256,7 +258,7 @@ export function ClosedPositionsTable({
                       baseCurrency={baseCurrency}
                     />
                   </td>
-                  <td className="px-4 py-3 text-right tabular-nums whitespace-nowrap">
+                  <td className="px-4 py-3 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
                     <WithBase
                       value={netoVenta}
                       currency={r.sellCurrency}
@@ -264,7 +266,7 @@ export function ClosedPositionsTable({
                       baseCurrency={baseCurrency}
                     />
                   </td>
-                  <td className="text-muted-foreground px-4 py-3 text-right tabular-nums whitespace-nowrap">
+                  <td className="text-muted-foreground px-4 py-3 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
                     {totalCosteOrig !== null ? (
                       <WithBase
                         value={totalCosteOrig}
@@ -273,7 +275,7 @@ export function ClosedPositionsTable({
                         baseCurrency={baseCurrency}
                       />
                     ) : (
-                      formatAmount(r.costBasis, baseCurrency)
+                      fmtMoney(r.costBasis, baseCurrency)
                     )}
                   </td>
                   <td
@@ -281,9 +283,10 @@ export function ClosedPositionsTable({
                       "px-4 py-3 text-right font-semibold tabular-nums whitespace-nowrap",
                       r.gain >= 0 ? "text-green-600" : "text-red-500",
                     )}
+                    style={RIGHT}
                   >
                     {r.gain >= 0 ? "+" : ""}
-                    {formatAmount(r.gain, baseCurrency)}
+                    {fmtMoney(r.gain, baseCurrency)}
                   </td>
                 </tr>
 
@@ -307,17 +310,15 @@ export function ClosedPositionsTable({
                         <td className="text-muted-foreground px-3 py-1.5 whitespace-nowrap">
                           {accountNameFor(accounts, lot.accountId)}
                         </td>
-                        <td className="text-muted-foreground px-3 py-1.5 text-right tabular-nums">
-                          {origQty.toLocaleString("es-ES", {
-                            maximumFractionDigits: 6,
-                          })}
+                        <td className="text-muted-foreground px-3 py-1.5 text-right tabular-nums" style={RIGHT}>
+                          {fmtNumber(origQty, 0, 6)}
                           {lot.splitFactor !== 1 && (
                             <span className="ml-1 text-[10px] opacity-50">
                               ×{lot.splitFactor}
                             </span>
                           )}
                         </td>
-                        <td className="text-muted-foreground px-3 py-1.5 text-right tabular-nums whitespace-nowrap">
+                        <td className="text-muted-foreground px-3 py-1.5 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
                           <WithBase
                             value={lot.buyPriceOriginal}
                             currency={lot.currency}
@@ -325,10 +326,10 @@ export function ClosedPositionsTable({
                             baseCurrency={baseCurrency}
                           />
                         </td>
-                        <td className="text-muted-foreground px-3 py-1.5 text-right tabular-nums whitespace-nowrap">
+                        <td className="text-muted-foreground px-3 py-1.5 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
                           {fmtFX(lot.buyFxRate, lot.currency, baseCurrency)}
                         </td>
-                        <td className="text-muted-foreground px-3 py-1.5 text-right tabular-nums whitespace-nowrap">
+                        <td className="text-muted-foreground px-3 py-1.5 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
                           <WithBase
                             value={lotTotal}
                             currency={lot.currency}
@@ -336,7 +337,7 @@ export function ClosedPositionsTable({
                             baseCurrency={baseCurrency}
                           />
                         </td>
-                        <td className="text-muted-foreground px-3 py-1.5 text-right tabular-nums whitespace-nowrap">
+                        <td className="text-muted-foreground px-3 py-1.5 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
                           <WithBase
                             value={lot.buyFeeOriginal}
                             currency={lot.currency}
@@ -344,7 +345,7 @@ export function ClosedPositionsTable({
                             baseCurrency={baseCurrency}
                           />
                         </td>
-                        <td className="text-muted-foreground px-3 py-1.5 text-right tabular-nums whitespace-nowrap">
+                        <td className="text-muted-foreground px-3 py-1.5 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
                           <WithBase
                             value={lotTotalConCom}
                             currency={lot.currency}
@@ -357,6 +358,186 @@ export function ClosedPositionsTable({
                     );
                   })}
               </Fragment>
+            );
+          })
+        )}
+      </tbody>
+    </table>
+  );
+}
+
+// Importe totalizado: con divisa homogénea se muestra el original y debajo el
+// equivalente en base; con divisas mezcladas, solo el importe en base.
+function TotalAmount({
+  amount,
+  currency,
+  baseCurrency,
+}: {
+  amount: Amount;
+  currency: string | null;
+  baseCurrency: string;
+}) {
+  if (currency === null)
+    return (
+      <WithBase
+        value={amount.base}
+        currency={baseCurrency}
+        fxRate={1}
+        baseCurrency={baseCurrency}
+      />
+    );
+  return (
+    <WithBase
+      value={amount.orig}
+      currency={currency}
+      fxRate={amount.orig !== 0 ? amount.base / amount.orig : 1}
+      baseCurrency={baseCurrency}
+    />
+  );
+}
+
+interface ClosedTotalsTableProps {
+  results: RealizedGain[];
+  accounts: Account[];
+  assets: AssetOption[];
+  baseCurrency: string;
+  isLoading: boolean;
+}
+
+export function ClosedTotalsTable({
+  results,
+  accounts,
+  assets,
+  baseCurrency,
+  isLoading,
+}: ClosedTotalsTableProps) {
+  const { sortCol, sortDir, handleSort } = useSort();
+  const { t } = useAddonTranslation();
+
+  // El FIFO es por activo y grupo de cuentas: cada pareja es una fila.
+  const groupOf = (accountId: string) =>
+    accounts.find((a) => a.id === accountId)?.group || accountId;
+  const labelOf = (poolKey: string) =>
+    accounts.find((a) => a.id === poolKey)?.name || poolKey;
+
+  const totals = totalizeByAsset(results, groupOf).sort((a, b) => {
+    const byDate = sortCol === "date";
+    const cmp = byDate
+      ? a.lastSellDate.localeCompare(b.lastSellDate)
+      : symbolFor(assets, a.assetId).localeCompare(
+            symbolFor(assets, b.assetId),
+            "es",
+          ) || a.poolKey.localeCompare(b.poolKey, "es");
+    return sortCol && sortDir === "desc" ? -cmp : cmp;
+  });
+
+  return (
+    <table className="w-full text-left text-sm">
+      <thead style={STICKY_HEAD}>
+        <tr className="bg-black text-white">
+          <th className={thSort} onClick={() => handleSort("date")}>
+            {t("colLastSale")}{" "}
+            <SortArrow active={sortCol === "date"} dir={sortDir} />
+          </th>
+          <th className={thSort} onClick={() => handleSort("asset")}>
+            {t("colAsset")} <SortArrow active={sortCol === "asset"} dir={sortDir} />
+          </th>
+          <th className="px-4 py-3 font-medium whitespace-nowrap">{t("colGroup")}</th>
+          <th className="px-4 py-3 text-right font-medium" style={RIGHT}>{t("colQty")}</th>
+          <th className="px-4 py-3 text-right font-medium whitespace-nowrap" style={RIGHT}>{t("colAvgPrice")}</th>
+          <th className="px-4 py-3 text-right font-medium whitespace-nowrap" style={RIGHT}>{t("colFx")}</th>
+          <th className="px-4 py-3 text-right font-medium whitespace-nowrap" style={RIGHT}>{t("colTotal")}</th>
+          <th className="px-4 py-3 text-right font-medium" style={RIGHT}>{t("colFees")}</th>
+          <th className="px-4 py-3 text-right font-medium whitespace-nowrap" style={RIGHT}>{t("colNet")}</th>
+          <th className="px-4 py-3 text-right font-medium whitespace-nowrap" style={RIGHT}>{t("colOrigCost")}</th>
+          <th className="px-4 py-3 text-right font-medium whitespace-nowrap" style={RIGHT}>{t("colGain")}</th>
+        </tr>
+      </thead>
+      <tbody className="divide-border divide-y">
+        {totals.length === 0 ? (
+          <tr>
+            <td
+              colSpan={11}
+              className="text-muted-foreground px-6 py-12 text-center italic"
+            >
+              {isLoading
+                ? t("searchingOps")
+                : t("noOps")}
+            </td>
+          </tr>
+        ) : (
+          totals.map((t) => {
+            const sellFx =
+              t.total.orig !== 0 ? t.total.base / t.total.orig : 1;
+            const avgPrice =
+              t.sellCurrency !== null
+                ? { orig: t.total.orig / t.quantity, base: t.total.base / t.quantity }
+                : { orig: 0, base: t.total.base / t.quantity };
+            return (
+              <tr key={`${t.assetId}|||${t.poolKey}`} className="bg-neutral-800">
+                <td className="px-4 py-3 font-mono text-xs whitespace-nowrap">
+                  {formatDate(t.lastSellDate)}
+                </td>
+                <td className="px-4 py-3 font-medium">
+                  {symbolFor(assets, t.assetId)}
+                </td>
+                <td className="text-muted-foreground px-4 py-3 whitespace-nowrap">
+                  {labelOf(t.poolKey)}
+                </td>
+                <td className="px-4 py-3 text-right tabular-nums" style={RIGHT}>
+                  {fmtNumber(t.quantity, 0, 4)}
+                </td>
+                <td className="px-4 py-3 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
+                  <TotalAmount
+                    amount={avgPrice}
+                    currency={t.sellCurrency}
+                    baseCurrency={baseCurrency}
+                  />
+                </td>
+                <td className="text-muted-foreground px-4 py-3 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
+                  {t.sellCurrency !== null
+                    ? fmtFX(sellFx, t.sellCurrency, baseCurrency)
+                    : "—"}
+                </td>
+                <td className="px-4 py-3 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
+                  <TotalAmount
+                    amount={t.total}
+                    currency={t.sellCurrency}
+                    baseCurrency={baseCurrency}
+                  />
+                </td>
+                <td className="text-muted-foreground px-4 py-3 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
+                  <TotalAmount
+                    amount={t.fee}
+                    currency={t.sellCurrency}
+                    baseCurrency={baseCurrency}
+                  />
+                </td>
+                <td className="px-4 py-3 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
+                  <TotalAmount
+                    amount={t.net}
+                    currency={t.sellCurrency}
+                    baseCurrency={baseCurrency}
+                  />
+                </td>
+                <td className="text-muted-foreground px-4 py-3 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
+                  <TotalAmount
+                    amount={t.cost}
+                    currency={t.costCurrency}
+                    baseCurrency={baseCurrency}
+                  />
+                </td>
+                <td
+                  className={cn(
+                    "px-4 py-3 text-right font-semibold tabular-nums whitespace-nowrap",
+                    t.gain >= 0 ? "text-green-600" : "text-red-500",
+                  )}
+                  style={RIGHT}
+                >
+                  {t.gain >= 0 ? "+" : ""}
+                  {fmtMoney(t.gain, baseCurrency)}
+                </td>
+              </tr>
             );
           })
         )}
@@ -385,6 +566,7 @@ export function OpenPositionsTable({
   toggleRow,
 }: OpenPositionsTableProps) {
   const { sortCol, sortDir, handleSort } = useSort();
+  const { t } = useAddonTranslation();
 
   const sortedPositions = sortCol
     ? [...positions].sort((a, b) => {
@@ -405,39 +587,27 @@ export function OpenPositionsTable({
 
   return (
     <table className="w-full text-left text-sm">
-      <thead>
+      <thead style={STICKY_HEAD}>
         <tr className="bg-black text-white">
           <th className={thSort}>
             <span onClick={() => handleSort("date")} className="cursor-pointer">
-              Fecha <SortArrow active={sortCol === "date"} dir={sortDir} />
+              {t("colDate")} <SortArrow active={sortCol === "date"} dir={sortDir} />
             </span>
             <span className="mx-1 opacity-40">/</span>
             <span
               onClick={() => handleSort("asset")}
               className="cursor-pointer"
             >
-              Activo <SortArrow active={sortCol === "asset"} dir={sortDir} />
+              {t("colAsset")} <SortArrow active={sortCol === "asset"} dir={sortDir} />
             </span>
           </th>
-          <th className="px-4 py-3 font-medium whitespace-nowrap">Cuenta</th>
-          <th className="px-4 py-3 text-right font-medium whitespace-nowrap">
-            Acciones
-          </th>
-          <th className="px-4 py-3 text-right font-medium whitespace-nowrap">
-            Precio compra
-          </th>
-          <th className="px-4 py-3 text-right font-medium whitespace-nowrap">
-            Tasa FX
-          </th>
-          <th className="px-4 py-3 text-right font-medium whitespace-nowrap">
-            Total orig.
-          </th>
-          <th className="px-4 py-3 text-right font-medium whitespace-nowrap">
-            Comisiones
-          </th>
-          <th className="px-4 py-3 text-right font-medium whitespace-nowrap">
-            Coste base
-          </th>
+          <th className="px-4 py-3 font-medium whitespace-nowrap">{t("colAccount")}</th>
+          <th className="px-4 py-3 text-right font-medium whitespace-nowrap" style={RIGHT}>{t("colShares")}</th>
+          <th className="px-4 py-3 text-right font-medium whitespace-nowrap" style={RIGHT}>{t("colBuyPrice")}</th>
+          <th className="px-4 py-3 text-right font-medium whitespace-nowrap" style={RIGHT}>{t("colFx")}</th>
+          <th className="px-4 py-3 text-right font-medium whitespace-nowrap" style={RIGHT}>{t("colOrigTotal")}</th>
+          <th className="px-4 py-3 text-right font-medium whitespace-nowrap" style={RIGHT}>{t("colFees")}</th>
+          <th className="px-4 py-3 text-right font-medium whitespace-nowrap" style={RIGHT}>{t("colCostBasis")}</th>
         </tr>
       </thead>
       <tbody className="divide-border divide-y">
@@ -448,8 +618,8 @@ export function OpenPositionsTable({
               className="text-muted-foreground px-6 py-12 text-center italic"
             >
               {isLoading
-                ? "Buscando posiciones..."
-                : "No hay posiciones abiertas para estos filtros."}
+                ? t("searchingPositions")
+                : t("noPositions")}
             </td>
           </tr>
         ) : (
@@ -481,35 +651,29 @@ export function OpenPositionsTable({
                     </span>
                   </td>
                   <td className="text-muted-foreground px-4 py-3" />
-                  <td className="px-4 py-3 text-right font-semibold tabular-nums">
-                    {p.totalQuantity.toLocaleString("es-ES", {
-                      maximumFractionDigits: 4,
-                    })}
+                  <td className="px-4 py-3 text-right font-semibold tabular-nums" style={RIGHT}>
+                    {fmtNumber(p.totalQuantity, 0, 4)}
                   </td>
-                  <td className="px-4 py-3 text-right tabular-nums whitespace-nowrap">
+                  <td className="px-4 py-3 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
                     <span className="flex flex-col items-end gap-0.5 leading-tight">
                       <span>
-                        {formatAmount(p.avgUnitPriceBase, baseCurrency)}
-                        <span className="text-muted-foreground ml-1 text-[10px]">
-                          /acc.
-                        </span>
+                        {fmtMoney(p.avgUnitPriceBase, baseCurrency)}
+                        <span className="text-muted-foreground ml-1 text-[10px]">{t("perShare")}</span>
                       </span>
-                      <span className="text-muted-foreground/70 text-[10px]">
-                        precio medio
-                      </span>
+                      <span className="text-muted-foreground/70 text-[10px]">{t("averagePrice")}</span>
                     </span>
                   </td>
-                  <td className="text-muted-foreground px-4 py-3 text-right">
+                  <td className="text-muted-foreground px-4 py-3 text-right" style={RIGHT}>
                     —
                   </td>
-                  <td className="text-muted-foreground px-4 py-3 text-right">
+                  <td className="text-muted-foreground px-4 py-3 text-right" style={RIGHT}>
                     —
                   </td>
-                  <td className="text-muted-foreground px-4 py-3 text-right tabular-nums whitespace-nowrap">
-                    {formatAmount(p.totalFeesBase, baseCurrency)}
+                  <td className="text-muted-foreground px-4 py-3 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
+                    {fmtMoney(p.totalFeesBase, baseCurrency)}
                   </td>
-                  <td className="px-4 py-3 text-right font-semibold tabular-nums whitespace-nowrap">
-                    {formatAmount(p.totalCostBase, baseCurrency)}
+                  <td className="px-4 py-3 text-right font-semibold tabular-nums whitespace-nowrap" style={RIGHT}>
+                    {fmtMoney(p.totalCostBase, baseCurrency)}
                   </td>
                 </tr>
 
@@ -532,10 +696,8 @@ export function OpenPositionsTable({
                         <td className="text-muted-foreground px-3 py-1.5 whitespace-nowrap">
                           {accountNameFor(accounts, lot.accountId)}
                         </td>
-                        <td className="text-muted-foreground px-3 py-1.5 text-right tabular-nums">
-                          {lot.quantity.toLocaleString("es-ES", {
-                            maximumFractionDigits: 6,
-                          })}
+                        <td className="text-muted-foreground px-3 py-1.5 text-right tabular-nums" style={RIGHT}>
+                          {fmtNumber(lot.quantity, 0, 6)}
                           {lot.splitFactor !== 1 && (
                             <span
                               className="ml-1.5 rounded px-1 py-0.5 text-[10px] font-semibold"
@@ -547,15 +709,15 @@ export function OpenPositionsTable({
                               }}
                               title={
                                 lot.splitFactor > 1
-                                  ? `Split aplicado ×${lot.splitFactor}`
-                                  : `Contrasplit aplicado ×${lot.splitFactor}`
+                                  ? t("splitApplied", { factor: lot.splitFactor })
+                                  : t("reverseSplitApplied", { factor: lot.splitFactor })
                               }
                             >
                               ×{lot.splitFactor}
                             </span>
                           )}
                         </td>
-                        <td className="text-muted-foreground px-3 py-1.5 text-right tabular-nums whitespace-nowrap">
+                        <td className="text-muted-foreground px-3 py-1.5 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
                           <WithBase
                             value={lot.unitPriceOriginal}
                             currency={lot.currency}
@@ -563,10 +725,10 @@ export function OpenPositionsTable({
                             baseCurrency={baseCurrency}
                           />
                         </td>
-                        <td className="text-muted-foreground px-3 py-1.5 text-right tabular-nums whitespace-nowrap">
+                        <td className="text-muted-foreground px-3 py-1.5 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
                           {fmtFX(lot.fxRate, lot.currency, baseCurrency)}
                         </td>
-                        <td className="text-muted-foreground px-3 py-1.5 text-right tabular-nums whitespace-nowrap">
+                        <td className="text-muted-foreground px-3 py-1.5 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
                           <WithBase
                             value={lotOrigTotal}
                             currency={lot.currency}
@@ -574,7 +736,7 @@ export function OpenPositionsTable({
                             baseCurrency={baseCurrency}
                           />
                         </td>
-                        <td className="text-muted-foreground px-3 py-1.5 text-right tabular-nums whitespace-nowrap">
+                        <td className="text-muted-foreground px-3 py-1.5 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
                           <WithBase
                             value={lot.feeOriginal}
                             currency={lot.currency}
@@ -582,8 +744,8 @@ export function OpenPositionsTable({
                             baseCurrency={baseCurrency}
                           />
                         </td>
-                        <td className="text-muted-foreground px-3 py-1.5 text-right tabular-nums whitespace-nowrap">
-                          {formatAmount(lot.costBase, baseCurrency)}
+                        <td className="text-muted-foreground px-3 py-1.5 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
+                          {fmtMoney(lot.costBase, baseCurrency)}
                         </td>
                       </tr>
                     );

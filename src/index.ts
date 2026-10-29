@@ -1,17 +1,20 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { AddonContext } from "@wealthfolio/addon-sdk";
-import { Icons } from "@wealthfolio/ui";
+import { registerTranslations, type AddonContext } from "@wealthfolio/addon-sdk";
 import React from "react";
 import { TaxesPage } from "./components/TaxesPage";
+import { translations } from "./i18n";
 
 export default function enable(ctx: AddonContext) {
   ctx.api.logger.info("WealthTax addon is being enabled");
+
+  // Antes del primer render, para no mostrar claves sin traducir.
+  registerTranslations(translations);
 
   try {
     const sidebarItem = ctx.sidebar.addItem({
       id: "wealth-tax",
       label: "WealthTax",
-      icon: React.createElement(Icons.Receipt, { className: "h-5 w-5" }),
+      icon: "receipt",
       route: "/addons/wealth-tax",
       order: 100,
     });
