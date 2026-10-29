@@ -41,6 +41,7 @@ currencies, and can pool lots at the account-group level.
 - [Highlights](#highlights)
 - [The three views](#the-three-views)
 - [How the FIFO engine works](#how-the-fifo-engine-works)
+- [Groups and homogeneous securities](#groups-and-homogeneous-securities)
 - [Filters](#filters)
 - [Multi-currency](#multi-currency)
 - [Privacy and permissions](#privacy-and-permissions)
@@ -57,7 +58,7 @@ currencies, and can pool lots at the account-group level.
 | **Totalized view** | One row per asset and group, with all sales summed and the date of the last one. |
 | **Open positions** | Active lots per asset with quantity, average price, cost basis and accumulated fees. |
 | **Splits & scrip dividends** | Retroactive split adjustment; free capital increases dilute existing lots at no extra cost. |
-| **Group-level FIFO** | Accounts that share a group share one lot pool, as the tax treatment usually requires. |
+| **Group-level FIFO** | Accounts that share a group share one lot pool, following the Spanish IRPF rule on homogeneous securities. |
 | **Multi-currency** | Original currency first, base-currency equivalent underneath. |
 | **Bilingual** | Spanish when Wealthfolio is in Spanish, English for any other language — it follows the app live. |
 | **Private by design** | Read-only, no network access, no browser storage, nothing leaves your machine. |
@@ -154,6 +155,34 @@ Corporate actions are handled automatically:
 - **Fees** are apportioned to the lots they belong to and carried into the cost
   basis and the net proceeds.
 - Only **posted** activities feed the engine.
+
+## Groups and homogeneous securities
+
+For Spanish tax purposes (IRPF), when homogeneous securities are sold, the ones
+acquired first are considered sold (FIFO). Homogeneous securities are identical
+securities — same company, same rights — that belong to the same taxpayer,
+whatever account or broker they sit in.
+
+WealthTax applies that rule through the **Group** field of your Wealthfolio
+accounts: FIFO is computed **per asset and per group**. Put in the same group the
+accounts that have the same holder or holders, even if they are at different
+brokers. Two accounts at the same broker with different holders go in different
+groups and are never mixed. An account without a group is treated on its own.
+
+| Situation | Result |
+| --- | --- |
+| Two accounts, same holder, at two different brokers | **Same group** — a sale in one can consume lots bought in the other. |
+| Two accounts at the same broker, different holders | **Different groups** — never mixed. |
+| An account with no group | Treated on its own. |
+
+To set it, open **Settings → Accounts** in Wealthfolio, edit each account and
+fill in the optional **Group** field, using the same name for the accounts that
+belong together.
+
+> **Note.** This is a simplification. In a joint account, securities are
+> attributed to each holder according to their share, and each holder's FIFO
+> would include their part of that account. If you hold jointly owned accounts,
+> check with a tax advisor how to group them.
 
 ## Filters
 
@@ -274,6 +303,7 @@ agrupar lotes a nivel de grupo de cuentas.
 - [Lo más destacado](#lo-más-destacado)
 - [Las tres vistas](#las-tres-vistas)
 - [Cómo funciona el motor FIFO](#cómo-funciona-el-motor-fifo)
+- [Grupos y valores homogéneos](#grupos-y-valores-homogéneos)
 - [Filtros](#filtros)
 - [Multidivisa](#multidivisa)
 - [Privacidad y permisos](#privacidad-y-permisos)
@@ -290,7 +320,7 @@ agrupar lotes a nivel de grupo de cuentas.
 | **Vista totalizada** | Una fila por activo y grupo, con todas las ventas sumadas y la fecha de la última. |
 | **Posiciones abiertas** | Lotes activos por activo con cantidad, precio medio, coste base y comisiones acumuladas. |
 | **Splits y scrip dividends** | Ajuste retroactivo de splits; las ampliaciones gratuitas diluyen los lotes existentes sin coste adicional. |
-| **FIFO por grupo** | Las cuentas que comparten grupo comparten un mismo pool de lotes. |
+| **FIFO por grupo** | Las cuentas que comparten grupo comparten un mismo pool de lotes, según la norma de valores homogéneos del IRPF. |
 | **Multidivisa** | Divisa original primero, equivalente en divisa base debajo. |
 | **Bilingüe** | Español si Wealthfolio está en español, inglés para cualquier otro idioma — sigue a la app en directo. |
 | **Privado por diseño** | Solo lectura, sin acceso a red, sin almacenamiento del navegador, nada sale de tu equipo. |
@@ -387,6 +417,34 @@ Las operaciones corporativas se gestionan automáticamente:
 - Las **comisiones** se prorratean a los lotes a los que pertenecen y pasan a
   la base de coste y al neto de la venta.
 - Solo las operaciones **contabilizadas** (`POSTED`) alimentan el motor.
+
+## Grupos y valores homogéneos
+
+Para el IRPF, cuando se venden valores homogéneos se consideran transmitidos los
+adquiridos en primer lugar (FIFO). Son homogéneos los valores idénticos —misma
+sociedad, mismos derechos— que pertenecen al mismo contribuyente, estén en la
+cuenta o broker que estén.
+
+WealthTax aplica esa regla con el campo **Grupo** de las cuentas de Wealthfolio:
+el FIFO se calcula **por activo y por grupo**. Pon en el mismo grupo las cuentas
+que tengan el mismo titular o los mismos titulares, aunque estén en brokers
+distintos. Dos cuentas del mismo broker con titulares distintos van en grupos
+distintos y nunca se mezclan. Una cuenta sin grupo se trata por separado.
+
+| Situación | Resultado |
+| --- | --- |
+| Dos cuentas del mismo titular, en dos brokers distintos | **Mismo grupo** — una venta en una puede consumir lotes comprados en la otra. |
+| Dos cuentas en el mismo broker, con titulares distintos | **Grupos distintos** — nunca se mezclan. |
+| Una cuenta sin grupo | Se trata por separado. |
+
+Para configurarlo, abre **Settings → Accounts** en Wealthfolio, edita cada cuenta
+y rellena el campo opcional **Group**, con el mismo nombre para las cuentas que
+van juntas.
+
+> **Nota.** Es una simplificación. En una cuenta con varios titulares, los
+> valores se atribuyen a cada uno según su porcentaje, y el FIFO de cada titular
+> incluiría su parte de esa cuenta. Si tienes cuentas en cotitularidad, consulta
+> con tu gestor cómo agruparlas.
 
 ## Filtros
 
