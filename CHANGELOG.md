@@ -9,6 +9,24 @@ Spanish version: [CHANGELOG.es.md](CHANGELOG.es.md).
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-10-29
+
+### Changed
+
+- The year filter now starts at the first year with any activity in the whole
+  database and runs up to the current year, instead of a fixed window around
+  the current year. It still opens on the current year.
+- README: added a screenshot and the Ko-fi badge; removed the developer-only
+  sections (build instructions, project structure, origin).
+
+### Fixed
+
+- The Account column was empty on the main rows of the closed and open
+  positions tables. It now shows the account, or "Multiple" when an open
+  position spans several accounts. The totalized view keeps showing the group.
+- The group, account, and asset filters showed the internal value (`all`, or a
+  raw id) instead of the selected name.
+
 ## [1.1.0] - 2026-10-29
 
 ### Added
@@ -57,6 +75,7 @@ Spanish version: [CHANGELOG.es.md](CHANGELOG.es.md).
 - Filters by year, account group, account, and asset; group-level FIFO pooling.
 - Sortable columns and expandable buy lots.
 
-[Unreleased]: https://github.com/advenacodex/wealth-tax/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/advenacodex/wealth-tax/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/advenacodex/wealth-tax/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/advenacodex/wealth-tax/compare/64d6afe...v1.1.0
 [1.0.0]: https://github.com/advenacodex/wealth-tax/commit/64d6afe

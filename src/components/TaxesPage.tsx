@@ -239,6 +239,10 @@ export function TaxesPage({ ctx }: TaxesPageProps) {
                   <Icons.Calendar className="h-3.5 w-3.5" /> {t("filterYear")}
                 </div>
                 <Select
+                  items={[
+                    { value: ALL, label: t("filterAllYears") },
+                    ...years.map((y) => ({ value: y, label: y })),
+                  ]}
                   value={filters.year || ALL}
                   onValueChange={(v) =>
                     setFilters({ year: v === ALL || v == null ? "" : v })
@@ -264,6 +268,10 @@ export function TaxesPage({ ctx }: TaxesPageProps) {
                     <Icons.Wallet className="h-3.5 w-3.5" /> {t("filterGroup")}
                   </div>
                   <Select
+                    items={[
+                      { value: ALL, label: t("filterAllGroups") },
+                      ...groups.map((g) => ({ value: g, label: g })),
+                    ]}
                     value={filters.group || ALL}
                     onValueChange={(v) =>
                       setFilters({ group: v === ALL || v == null ? "" : v })
@@ -289,6 +297,10 @@ export function TaxesPage({ ctx }: TaxesPageProps) {
                   <Icons.Wallet className="h-3.5 w-3.5" /> {t("filterAccount")}
                 </div>
                 <Select
+                  items={[
+                    { value: ALL, label: t("filterAllAccounts") },
+                    ...accounts.map((a) => ({ value: a.id, label: a.name })),
+                  ]}
                   value={filters.accountId || ALL}
                   onValueChange={(v) =>
                     setFilters({ accountId: v === ALL || v == null ? "" : v })
@@ -313,6 +325,13 @@ export function TaxesPage({ ctx }: TaxesPageProps) {
                   <Icons.Tag className="h-3.5 w-3.5" /> {t("filterAsset")}
                 </div>
                 <Select
+                  items={[
+                    { value: ALL, label: t("filterAllAssets") },
+                    ...assets.map((a) => ({
+                      value: a.id,
+                      label: a.symbol || a.name || a.id,
+                    })),
+                  ]}
                   value={filters.assetId || ALL}
                   onValueChange={(v) =>
                     setFilters({ assetId: v === ALL || v == null ? "" : v })

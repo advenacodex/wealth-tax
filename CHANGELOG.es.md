@@ -9,6 +9,25 @@ Versión en inglés (canónica): [CHANGELOG.md](CHANGELOG.md).
 
 ## [Sin publicar]
 
+## [1.1.1] - 2026-10-29
+
+### Cambiado
+
+- El filtro de año empieza ahora en el primer año con alguna actividad de toda
+  la base de datos y llega hasta el año actual, en lugar de una ventana fija
+  alrededor del año actual. Sigue abriéndose en el año actual.
+- README: añadida una captura y la insignia de Ko-fi; eliminadas las secciones
+  solo para desarrolladores (compilación, estructura del proyecto, origen).
+
+### Corregido
+
+- La columna Cuenta salía vacía en las filas principales de las tablas de
+  posiciones cerradas y abiertas. Ahora muestra la cuenta, o «Varias» cuando una
+  posición abierta abarca varias cuentas. La vista Totalizado sigue mostrando el
+  grupo.
+- Los filtros de grupo, cuenta y activo mostraban el valor interno (`all` o un
+  id crudo) en lugar del nombre seleccionado.
+
 ## [1.1.0] - 2026-10-29
 
 ### Añadido
@@ -60,6 +79,7 @@ Versión en inglés (canónica): [CHANGELOG.md](CHANGELOG.md).
 - Filtros por año, grupo de cuentas, cuenta y activo; pooling FIFO por grupo.
 - Columnas ordenables y lotes de compra desplegables.
 
-[Sin publicar]: https://github.com/advenacodex/wealth-tax/compare/v1.1.0...HEAD
+[Sin publicar]: https://github.com/advenacodex/wealth-tax/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/advenacodex/wealth-tax/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/advenacodex/wealth-tax/compare/64d6afe...v1.1.0
 [1.0.0]: https://github.com/advenacodex/wealth-tax/commit/64d6afe

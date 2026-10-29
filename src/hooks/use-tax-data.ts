@@ -95,10 +95,24 @@ export function useTaxData(ctx: AddonContext) {
     );
   }, [activities]);
 
+  // Primer año con actividad de toda la base de datos (cualquier operación,
+  // sin filtros), que es donde arranca la lista de años.
+  const firstYear = useMemo(() => {
+    let min = Infinity;
+    for (const a of activities) {
+      const y = new Date(a.date).getFullYear();
+      if (Number.isFinite(y) && y < min) min = y;
+    }
+    return Number.isFinite(min) ? min : undefined;
+  }, [activities]);
+
   const years = useMemo(() => {
     const current = new Date().getFullYear();
-    return Array.from({ length: 11 }, (_, i) => (current - 5 + i).toString());
-  }, []);
+    const start = Math.min(firstYear ?? current, current);
+    return Array.from({ length: current - start + 1 }, (_, i) =>
+      (start + i).toString(),
+    );
+  }, [firstYear]);
 
   // Scope activities by group/account/asset, mirroring the taxes & open-positions
   // API routes in wealthfolio-taxes: a single account is expanded to its whole

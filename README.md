@@ -32,6 +32,10 @@ consumed, at what cost, with which fees and at which exchange rate**.
 It understands stock splits, reverse splits and scrip dividends, works across
 currencies, and can pool lots at the account-group level.
 
+<p align="center">
+  <img src="docs/screenshots/wealthtax_1.1.png" alt="WealthTax inside Wealthfolio: closed positions by date, with filters, summary cards and expanded buy lots" width="900">
+</p>
+
 ## Contents
 
 - [Highlights](#highlights)
@@ -41,9 +45,6 @@ currencies, and can pool lots at the account-group level.
 - [Multi-currency](#multi-currency)
 - [Privacy and permissions](#privacy-and-permissions)
 - [Requirements and installation](#requirements-and-installation)
-- [Development](#development)
-- [Project structure](#project-structure)
-- [Origin and standalone alternative](#origin-and-standalone-alternative)
 - [Disclaimer](#disclaimer)
 - [Changelog](#changelog)
 - [License](#license)
@@ -78,6 +79,8 @@ Click a row to expand the **buy lots** that the sale consumed:
 Columns: *Date · Asset · Account · Qty · Price · FX rate · Total · Fees ·
 Total − fees · Original cost (incl. fees) · Gain/Loss*.
 
+The **Account** column shows the account the sale was made from.
+
 ### Closed positions — totalized
 
 Switch to **Totalizado** (next to *Por fechas*) for the same layout, collapsed
@@ -88,6 +91,8 @@ to **one row per asset and account group**:
 - **Average price** and **average FX rate** are weighted by the amounts sold.
 - Groups are never mixed: FIFO lots belong to a group, so the same asset sold
   in two different groups produces two rows.
+- Accounts of the same group are added together; accounts of different groups
+  never are. That is why this view shows the **Group** instead of the account.
 - If one asset was sold in several currencies, amounts fall back to the base
   currency, because original amounts can't be added across currencies.
 
@@ -96,6 +101,9 @@ to **one row per asset and account group**:
 Active (unsold) lots grouped by asset, expandable to the individual lots.
 Columns: *Date · Asset · Account · Qty · Purchase price · FX rate · Original
 total · Fees · Cost basis*.
+
+The **Account** column shows the account when all the lots of a position come
+from a single one, or **Multiple** when they come from several.
 
 ### Summary cards
 
@@ -151,7 +159,7 @@ Corporate actions are handled automatically:
 
 | Filter | Behaviour |
 | --- | --- |
-| **Year** | Defaults to the current year. For closed positions it filters by sale year; for open positions, by **purchase** year. |
+| **Year** | The list starts at the first year with any activity in your whole Wealthfolio database and runs up to the current year; it opens on the current year (or choose *All years*). For closed positions it filters by sale year; for open positions, by **purchase** year. |
 | **Group** | Shows every account in the group. |
 | **Account** | Mutually exclusive with *Group* — choosing one clears the other. |
 | **Asset** | Restricts the report to one instrument. |
@@ -221,58 +229,6 @@ WealthTax is also listed in the
 once its listing is published there; the directory only links to this
 repository, and the install is always **Install from File**.
 
-## Development
-
-To build the addon from source (not needed to use it):
-
-```bash
-pnpm install        # install dependencies
-pnpm dev            # build in watch mode
-pnpm dev:server     # addon dev server (wealthfolio dev)
-pnpm build          # production build → dist/addon.js
-pnpm type-check     # type checking (tsc --noEmit)
-pnpm bundle         # clean + build + package → dist/*.zip
-```
-
-Or package it by hand after `pnpm build`:
-
-```bash
-zip -r wealth-tax-addon.zip manifest.json dist/addon.js
-```
-
-> No `pnpm` in your `PATH`? Use `npx pnpm@10 <command>`.
-
-## Project structure
-
-```
-manifest.json                  # addon metadata, SDK version and permissions
-src/
-├── index.ts                   # enable(): registers sidebar entry, route, cleanup
-├── components/
-│   ├── TaxesPage.tsx          # page: filters, summary cards, view switches
-│   └── TaxTable.tsx           # closed / totalized / open tables
-├── hooks/
-│   └── use-tax-data.ts        # data loading, filters and aggregates
-├── i18n.ts                    # en / es translation bundles
-└── utils/
-    ├── fifo-engine.ts         # FIFO engine (splits, scrip dividends, lots)
-    ├── totals.ts              # per asset + group totalization
-    └── format.ts              # locale-aware number and money formatting
-```
-
-## Origin and standalone alternative
-
-The FIFO engine (`src/utils/fifo-engine.ts`) is a port of `src/lib/fifo.ts` from
-the [`wealthfolio-taxes`](https://github.com/advenacodex/wealthfolio-taxes)
-project, adapted to `@wealthfolio/addon-sdk` types and generalized to any base
-currency (the original `*EUR` fields became `*Base`).
-
-That same engine ships as a **standalone Next.js app** distributed as a Docker
-image. Instead of running inside Wealthfolio's addon runtime, it reads
-`wealthfolio.db` (SQLite) in read-only mode and runs as an independent service —
-handy if you'd rather host the tax report separately (a NAS, a home server)
-than embed it in the Wealthfolio UI.
-
 ## Disclaimer
 
 WealthTax is an informational tool. It is **not tax advice**, and results depend
@@ -291,6 +247,8 @@ See [CHANGELOG.md](CHANGELOG.md) for the full history of changes
 
 [MIT](LICENSE) © 2026 advenacodex
 
+[![Support me on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/advenacodex)
+
 ---
 
 # Español
@@ -307,6 +265,10 @@ de compra más antiguos (First-In, First-Out), de modo que ves exactamente
 Entiende splits, contrasplits y scrip dividends, funciona entre divisas y puede
 agrupar lotes a nivel de grupo de cuentas.
 
+<p align="center">
+  <img src="docs/screenshots/wealthtax_1.1.png" alt="WealthTax dentro de Wealthfolio: posiciones cerradas por fechas, con filtros, tarjetas de resumen y lotes de compra desplegados" width="900">
+</p>
+
 ## Contenido
 
 - [Lo más destacado](#lo-más-destacado)
@@ -316,9 +278,6 @@ agrupar lotes a nivel de grupo de cuentas.
 - [Multidivisa](#multidivisa)
 - [Privacidad y permisos](#privacidad-y-permisos)
 - [Requisitos e instalación](#requisitos-e-instalación)
-- [Desarrollo](#desarrollo)
-- [Estructura del proyecto](#estructura-del-proyecto)
-- [Origen y alternativa standalone](#origen-y-alternativa-standalone)
 - [Aviso legal](#aviso-legal)
 - [Changelog (ES)](#changelog-es)
 - [Licencia](#licencia)
@@ -353,6 +312,8 @@ Pulsa una fila para desplegar los **lotes de compra** que consumió la venta:
 Columnas: *Fecha · Activo · Cuenta · Cant. · Precio · Tasa FX · Total ·
 Comisiones · Total − com. · Coste orig. (c/com.) · Benef./Pérd.*
 
+La columna **Cuenta** muestra la cuenta desde la que se hizo la venta.
+
 ### Posiciones cerradas — totalizado
 
 Cambia a **Totalizado** (junto a *Por fechas*) para ver el mismo formato
@@ -364,6 +325,8 @@ reducido a **una fila por activo y grupo de cuentas**:
   vendidos.
 - Los grupos nunca se mezclan: los lotes FIFO pertenecen a un grupo, así que el
   mismo activo vendido en dos grupos distintos da dos filas.
+- Las cuentas de un mismo grupo se suman; las de grupos distintos, nunca. Por eso
+  esta vista muestra el **Grupo** y no la cuenta.
 - Si un activo se vendió en varias divisas, los importes pasan a la divisa
   base, porque los importes originales no se pueden sumar entre divisas.
 
@@ -372,6 +335,9 @@ reducido a **una fila por activo y grupo de cuentas**:
 Lotes activos (no vendidos) agrupados por activo, desplegables hasta cada lote.
 Columnas: *Fecha · Activo · Cuenta · Cant. · Precio compra · Tasa FX · Total
 orig. · Comisiones · Coste base.*
+
+La columna **Cuenta** muestra la cuenta cuando todos los lotes de una posición
+vienen de una sola, o **Varias** cuando vienen de varias.
 
 ### Tarjetas de resumen
 
@@ -426,7 +392,7 @@ Las operaciones corporativas se gestionan automáticamente:
 
 | Filtro | Comportamiento |
 | --- | --- |
-| **Año** | Por defecto, el año actual. En posiciones cerradas filtra por año de venta; en abiertas, por año de **compra**. |
+| **Año** | La lista empieza en el primer año con alguna actividad en toda tu base de datos de Wealthfolio y llega hasta el año actual; se abre en el año actual (o elige *Todos los años*). En posiciones cerradas filtra por año de venta; en abiertas, por año de **compra**. |
 | **Grupo** | Muestra todas las cuentas del grupo. |
 | **Cuenta** | Excluyente con *Grupo*: elegir uno limpia el otro. |
 | **Activo** | Limita el informe a un instrumento. |
@@ -496,58 +462,6 @@ WealthTax también figurará en el
 cuando se publique su ficha; el directorio solo enlaza a este repositorio y la
 instalación es siempre con **Install from File**.
 
-## Desarrollo
-
-Para compilar el addon desde el código fuente (no hace falta para usarlo):
-
-```bash
-pnpm install        # instalar dependencias
-pnpm dev            # build en modo watch
-pnpm dev:server     # servidor de desarrollo de addons (wealthfolio dev)
-pnpm build          # build de producción → dist/addon.js
-pnpm type-check     # comprobación de tipos (tsc --noEmit)
-pnpm bundle         # clean + build + package → dist/*.zip
-```
-
-O empaquétalo a mano tras `pnpm build`:
-
-```bash
-zip -r wealth-tax-addon.zip manifest.json dist/addon.js
-```
-
-> ¿Sin `pnpm` en el `PATH`? Usa `npx pnpm@10 <comando>`.
-
-## Estructura del proyecto
-
-```
-manifest.json                  # metadatos, versión de SDK y permisos
-src/
-├── index.ts                   # enable(): registra entrada de menú, ruta y limpieza
-├── components/
-│   ├── TaxesPage.tsx          # página: filtros, tarjetas de resumen, selector de vistas
-│   └── TaxTable.tsx           # tablas cerradas / totalizada / abiertas
-├── hooks/
-│   └── use-tax-data.ts        # carga de datos, filtros y agregados
-├── i18n.ts                    # traducciones en / es
-└── utils/
-    ├── fifo-engine.ts         # motor FIFO (splits, scrip dividends, lotes)
-    ├── totals.ts              # totalización por activo + grupo
-    └── format.ts              # formato numérico y de importes según idioma
-```
-
-## Origen y alternativa standalone
-
-El motor FIFO (`src/utils/fifo-engine.ts`) es un port de `src/lib/fifo.ts` del
-proyecto [`wealthfolio-taxes`](https://github.com/advenacodex/wealthfolio-taxes),
-adaptado a los tipos de `@wealthfolio/addon-sdk` y generalizado a cualquier
-divisa base (los campos `*EUR` originales pasan a llamarse `*Base`).
-
-Ese mismo motor existe como **aplicación Next.js independiente**, distribuida
-como imagen Docker. En lugar de ejecutarse dentro del runtime de addons de
-Wealthfolio, lee `wealthfolio.db` (SQLite) en modo solo lectura y corre como un
-servicio aparte — útil si prefieres alojar el informe fiscal por separado (un
-NAS, un servidor doméstico) en vez de integrarlo en la interfaz de Wealthfolio.
-
 ## Aviso legal
 
 WealthTax es una herramienta informativa. **No constituye asesoramiento
@@ -565,3 +479,5 @@ con [Versionado Semántico](https://semver.org/lang/es/)). Versión en inglés:
 ## Licencia
 
 [MIT](LICENSE) © 2026 advenacodex
+
+[![Apóyame en Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/advenacodex)

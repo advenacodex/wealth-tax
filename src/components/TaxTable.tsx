@@ -73,6 +73,14 @@ function accountNameFor(accounts: Account[], id: string) {
   return accounts.find((a) => a.id === id)?.name || id;
 }
 
+// Nombre de la cuenta si es una sola; "Varias" / "Multiple" si hay más de una.
+function accountsLabel(accounts: Account[], ids: string[], multiple: string) {
+  const unique = Array.from(new Set(ids));
+  if (unique.length === 0) return "";
+  if (unique.length === 1) return accountNameFor(accounts, unique[0]);
+  return multiple;
+}
+
 type SortCol = "date" | "asset";
 type SortDir = "asc" | "desc";
 
@@ -227,7 +235,9 @@ export function ClosedPositionsTable({
                     </span>
                   </td>
                   <td className="px-4 py-3 font-medium">{symbol}</td>
-                  <td className="text-muted-foreground px-4 py-3" />
+                  <td className="text-muted-foreground px-4 py-3 whitespace-nowrap">
+                    {accountNameFor(accounts, r.accountId)}
+                  </td>
                   <td className="px-4 py-3 text-right tabular-nums" style={RIGHT}>
                     {fmtNumber(r.quantity, 0, 4)}
                   </td>
@@ -417,6 +427,9 @@ export function ClosedTotalsTable({
   // El FIFO es por activo y grupo de cuentas: cada pareja es una fila.
   const groupOf = (accountId: string) =>
     accounts.find((a) => a.id === accountId)?.group || accountId;
+
+  // Nombre del grupo; una cuenta sin grupo es su propio pool y se muestra por
+  // su nombre.
   const labelOf = (poolKey: string) =>
     accounts.find((a) => a.id === poolKey)?.name || poolKey;
 
@@ -466,76 +479,76 @@ export function ClosedTotalsTable({
             </td>
           </tr>
         ) : (
-          totals.map((t) => {
+          totals.map((row) => {
             const sellFx =
-              t.total.orig !== 0 ? t.total.base / t.total.orig : 1;
+              row.total.orig !== 0 ? row.total.base / row.total.orig : 1;
             const avgPrice =
-              t.sellCurrency !== null
-                ? { orig: t.total.orig / t.quantity, base: t.total.base / t.quantity }
-                : { orig: 0, base: t.total.base / t.quantity };
+              row.sellCurrency !== null
+                ? { orig: row.total.orig / row.quantity, base: row.total.base / row.quantity }
+                : { orig: 0, base: row.total.base / row.quantity };
             return (
-              <tr key={`${t.assetId}|||${t.poolKey}`} className="bg-neutral-800">
+              <tr key={`${row.assetId}|||${row.poolKey}`} className="bg-neutral-800">
                 <td className="px-4 py-3 font-mono text-xs whitespace-nowrap">
-                  {formatDate(t.lastSellDate)}
+                  {formatDate(row.lastSellDate)}
                 </td>
                 <td className="px-4 py-3 font-medium">
-                  {symbolFor(assets, t.assetId)}
+                  {symbolFor(assets, row.assetId)}
                 </td>
                 <td className="text-muted-foreground px-4 py-3 whitespace-nowrap">
-                  {labelOf(t.poolKey)}
+                  {labelOf(row.poolKey)}
                 </td>
                 <td className="px-4 py-3 text-right tabular-nums" style={RIGHT}>
-                  {fmtNumber(t.quantity, 0, 4)}
+                  {fmtNumber(row.quantity, 0, 4)}
                 </td>
                 <td className="px-4 py-3 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
                   <TotalAmount
                     amount={avgPrice}
-                    currency={t.sellCurrency}
+                    currency={row.sellCurrency}
                     baseCurrency={baseCurrency}
                   />
                 </td>
                 <td className="text-muted-foreground px-4 py-3 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
-                  {t.sellCurrency !== null
-                    ? fmtFX(sellFx, t.sellCurrency, baseCurrency)
+                  {row.sellCurrency !== null
+                    ? fmtFX(sellFx, row.sellCurrency, baseCurrency)
                     : "—"}
                 </td>
                 <td className="px-4 py-3 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
                   <TotalAmount
-                    amount={t.total}
-                    currency={t.sellCurrency}
+                    amount={row.total}
+                    currency={row.sellCurrency}
                     baseCurrency={baseCurrency}
                   />
                 </td>
                 <td className="text-muted-foreground px-4 py-3 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
                   <TotalAmount
-                    amount={t.fee}
-                    currency={t.sellCurrency}
+                    amount={row.fee}
+                    currency={row.sellCurrency}
                     baseCurrency={baseCurrency}
                   />
                 </td>
                 <td className="px-4 py-3 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
                   <TotalAmount
-                    amount={t.net}
-                    currency={t.sellCurrency}
+                    amount={row.net}
+                    currency={row.sellCurrency}
                     baseCurrency={baseCurrency}
                   />
                 </td>
                 <td className="text-muted-foreground px-4 py-3 text-right tabular-nums whitespace-nowrap" style={RIGHT}>
                   <TotalAmount
-                    amount={t.cost}
-                    currency={t.costCurrency}
+                    amount={row.cost}
+                    currency={row.costCurrency}
                     baseCurrency={baseCurrency}
                   />
                 </td>
                 <td
                   className={cn(
                     "px-4 py-3 text-right font-semibold tabular-nums whitespace-nowrap",
-                    t.gain >= 0 ? "text-green-600" : "text-red-500",
+                    row.gain >= 0 ? "text-green-600" : "text-red-500",
                   )}
                   style={RIGHT}
                 >
-                  {t.gain >= 0 ? "+" : ""}
-                  {fmtMoney(t.gain, baseCurrency)}
+                  {row.gain >= 0 ? "+" : ""}
+                  {fmtMoney(row.gain, baseCurrency)}
                 </td>
               </tr>
             );
@@ -650,7 +663,13 @@ export function OpenPositionsTable({
                       {symbol}
                     </span>
                   </td>
-                  <td className="text-muted-foreground px-4 py-3" />
+                  <td className="text-muted-foreground px-4 py-3 whitespace-nowrap">
+                    {accountsLabel(
+                      accounts,
+                      p.lots.map((l) => l.accountId),
+                      t("multiple"),
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-right font-semibold tabular-nums" style={RIGHT}>
                     {fmtNumber(p.totalQuantity, 0, 4)}
                   </td>

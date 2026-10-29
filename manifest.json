@@ -1,7 +1,7 @@
 {
   "id": "wealth-tax",
   "name": "WealthTax",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "FIFO realized gains and open positions tax report",
   "author": "advenacodex@gmail.com",
   "main": "dist/addon.js",
